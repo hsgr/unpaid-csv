@@ -5,6 +5,6 @@ SMTP_USERNAME = 'user@example.com'
 SMTP_PASSWORD = ''
 SMTP_FROM = 'user@example.com'
 
-INTERVAL_DAYS = 90
+INTERVAL_DAYS = 1
 
 FILENAME = 'members.csv'
