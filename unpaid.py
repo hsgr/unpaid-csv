@@ -47,9 +47,9 @@ def send_email(to_addr, subject, body):
     server.quit()
 
 
-def subscription_due(last_payment):
+def subscription_due(last_paid):
     """Check if fees are due"""
-    passed_days = (TODAY - last_payment).days
+    passed_days = (TODAY - last_paid).days
     if passed_days > INTERVAL_DAYS:
         return passed_days - INTERVAL_DAYS
 
@@ -57,13 +57,13 @@ def subscription_due(last_payment):
 def mail_loop(members):
     """Loop over members. Calls send_email if fees are due"""
     for member in members:
-        last_payment = datetime.strptime(member[2], '%Y-%m-%d').date()
-        days_due = subscription_due(last_payment)
+        last_paid = datetime.strptime(member[2], '%Y-%m-%d').date()
+        days_due = subscription_due(last_paid)
         if days_due:
             name = member[0]
             to_addr = member[1]
-            subject = Template(SUBJECT).substitute(name, to_addr, days_due, last_payment)
-            body = Template(BODY).substitute(name, to_addr, days_due, last_payment)
+            subject = Template(SUBJECT).substitute(name, to_addr, days_due, last_paid)
+            body = Template(BODY).substitute(name, to_addr, days_due, last_paid)
             send_email(to_addr, subject, body)
 
 

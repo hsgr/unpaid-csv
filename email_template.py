@@ -7,7 +7,7 @@ SUBJECT = 'subject $name'
 BODY = """\
 Αβγδεέαά $name <$to_addr>
 
-your last payment was made at $last_payment this means that as of today your
+your last payment was made at $last_paid this means that as of today your
 subscriptios is due for almost $days_due days.
 
 """
