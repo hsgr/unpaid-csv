@@ -1,10 +1,10 @@
 # coding: utf-8
+"""Config file example. Rename to config.py"""
+SMTP_SERVER = 'smtp.example.com:587'
+SMTP_USERNAME = 'user@example.com'
+SMTP_PASSWORD = ''
+SMTP_FROM = 'user@example.com'
 
-smtp_server = 'smtp.example.com:587'
-smtp_username = 'user@example.com'
-smtp_password = ''
-smtp_from = 'user@example.com'
+INTERVAL_DAYS = 90
 
-interval_days = 90
-
-filename = 'members.csv'
+FILENAME = 'members.csv'

@@ -1,5 +1,10 @@
-#    Unpaid CSV. A script for Hackerspace.gr to remind members for their late
-#    subscription fees.
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+""" Unpaid CSV.
+A script for Hackerspace.gr to remind members of their late subscription fees.
+"""
+
 #    Copyright (C) 2016  Sotirios Vrachas <sotirio@vrachas.net>
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -18,47 +23,50 @@
 from csv import reader
 from datetime import date, datetime
 from string import Template
-from email_template import subject_, body_
 from smtplib import SMTP
 from email.mime.text import MIMEText
 from email.header import Header
-from config import smtp_from, smtp_server, smtp_username, smtp_password, \
-    interval_days, filename
+from email_template import SUBJECT, BODY
+from config import SMTP_FROM, SMTP_SERVER, SMTP_USERNAME, \
+    SMTP_PASSWORD, INTERVAL_DAYS, FILENAME
 
-today = date.today()
+TODAY = date.today()
 
 
-def send_email(to, subject, body):
+def send_email(to_addr, subject, body):
+    """Sends Email"""
     msg = MIMEText(body.encode('utf-8'), _charset='utf-8')
-    msg['Subject'] = Header(subject, "utf-8")
-    msg['From'] = smtp_from
-    msg['To'] = to
+    msg['Subject'] = Header(subject, 'utf-8')
+    msg['From'] = SMTP_FROM
+    msg['To'] = to_addr
 
-    server = SMTP(smtp_server)
+    server = SMTP(SMTP_SERVER)
     server.starttls()
-    server.login(smtp_username, smtp_password)
-    server.sendmail(smtp_from, [to], msg.as_string())
+    server.login(SMTP_USERNAME, SMTP_PASSWORD)
+    server.sendmail(SMTP_FROM, [to_addr], msg.as_string())
     server.quit()
 
 
 def subscription_due(last_payment):
-    passed_days = (today - last_payment).days
-    if (passed_days > interval_days):
-        return (passed_days - interval_days)
+    """Check if fees are due"""
+    passed_days = (TODAY - last_payment).days
+    if passed_days > INTERVAL_DAYS:
+        return passed_days - INTERVAL_DAYS
 
 
 def mail_loop(members):
+    """Loop over members. Calls send_email if fees are due"""
     for member in members:
-        last_payment = datetime.strptime(member[2], "%Y-%m-%d").date()
+        last_payment = datetime.strptime(member[2], '%Y-%m-%d').date()
         days_due = subscription_due(last_payment)
         if days_due:
             name = member[0]
-            to = member[1]
-            subject = Template(subject_).substitute(locals())
-            body = Template(body_).substitute(locals())
-            send_email(to, subject, body)
-            print(to + subject + body)
+            to_addr = member[1]
+            subject = Template(SUBJECT).substitute(name, to_addr, days_due, last_payment)
+            body = Template(BODY).substitute(name, to_addr, days_due, last_payment)
+            send_email(to_addr, subject, body)
 
-with open(filename, 'rt') as csvfile:
-    members = reader(csvfile, delimiter=',')
-    mail_loop(members)
+
+with open(FILENAME, 'rt') as csvfile:
+    MEMBERS = reader(csvfile, delimiter=',')
+    mail_loop(MEMBERS)
