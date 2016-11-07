@@ -62,8 +62,12 @@ def mail_loop(members):
         if days_due:
             name = member[0]
             to_addr = member[1]
-            subject = Template(SUBJECT).substitute(name, to_addr, days_due, last_paid)
-            body = Template(BODY).substitute(name, to_addr, days_due, last_paid)
+            subject = Template(SUBJECT).substitute(name=name, to_addr=to_addr,
+                                                   days_due=days_due,
+                                                   last_paid=last_paid)
+            body = Template(BODY).substitute(name=name, to_addr=to_addr,
+                                             days_due=days_due,
+                                             last_paid=last_paid)
             send_email(to_addr, subject, body)
 
 
