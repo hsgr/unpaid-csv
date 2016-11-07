@@ -27,8 +27,7 @@ from smtplib import SMTP
 from email.mime.text import MIMEText
 from email.header import Header
 from email_template import SUBJECT, BODY
-from config import SMTP_FROM, SMTP_SERVER, SMTP_USERNAME, \
-    SMTP_PASSWORD, INTERVAL_DAYS, FILENAME
+import config
 
 TODAY = date.today()
 
@@ -37,21 +36,29 @@ def send_email(to_addr, subject, body):
     """Sends Email"""
     msg = MIMEText(body.encode('utf-8'), _charset='utf-8')
     msg['Subject'] = Header(subject, 'utf-8')
-    msg['From'] = SMTP_FROM
+    msg['From'] = config.EMAIL_FROM
     msg['To'] = to_addr
-
-    server = SMTP(SMTP_SERVER)
-    server.starttls()
-    server.login(SMTP_USERNAME, SMTP_PASSWORD)
-    server.sendmail(SMTP_FROM, [to_addr], msg.as_string())
-    server.quit()
+    if config.EMAIL_METHOD == 'smtp':
+        server = SMTP(config.SMTP_SERVER)
+        if config.SMTP_SECURETY == 'starttls':
+            server.starttls()
+        if config.SMTP_AUTH:
+            server.login(config.SMTP_USERNAME, config.SMTP_PASSWORD)
+        server.sendmail(config.EMAIL_FROM, [to_addr], msg.as_string())
+        server.quit()
+    elif config.EMAIL_METHOD == 'sendmail':
+        from subprocess import Popen, PIPE
+        proc = Popen(["/usr/sbin/sendmail", "-t", "-oi"], stdin=PIPE)
+        proc.communicate(msg.as_string())
+    else:
+        print(msg.as_string())
 
 
 def subscription_due(last_paid):
     """Check if fees are due"""
     passed_days = (TODAY - last_paid).days
-    if passed_days > INTERVAL_DAYS:
-        return passed_days - INTERVAL_DAYS
+    if passed_days > config.INTERVAL_DAYS:
+        return passed_days - config.INTERVAL_DAYS
 
 
 def mail_loop(members):
@@ -71,6 +78,6 @@ def mail_loop(members):
             send_email(to_addr, subject, body)
 
 
-with open(FILENAME, 'rt') as csvfile:
+with open(config.FILENAME, 'rt') as csvfile:
     MEMBERS = reader(csvfile, delimiter=',')
     mail_loop(MEMBERS)
